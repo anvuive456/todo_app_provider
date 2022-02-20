@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:todo_app/core/dependency_injection.dart';
+import 'package:todo_app/cubits/add_todo_cubit.dart';
+import 'package:todo_app/cubits/edit_todo_cubit.dart';
+import 'package:todo_app/cubits/todos_cubit.dart';
+import 'package:todo_app/model/todo_model.dart';
 import 'package:todo_app/providers/todo_provider.dart';
 import 'package:todo_app/utils/strings.dart';
+import 'package:todo_app/widgets/todo_list.dart';
 
-class TodoDialog{
-  static showEditTodo({required int index,required BuildContext context}) {
+class TodoDialog {
+  static showEditTodo({required int index, required BuildContext context}) {
     TextEditingController _titleController = TextEditingController();
     TextEditingController _dateController = TextEditingController();
     DateTime? d;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         actions: [
           TextButton(
               onPressed: () {
@@ -23,12 +29,12 @@ class TodoDialog{
                         : _titleController.text,
                     dateTime: d,
                     index: index);
-                Navigator.of(context).pop();
+                Navigator.of(ctx).pop();
               },
               child: Text(AppStrings.btnEdit)),
           TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(ctx).pop();
               },
               child: Text(AppStrings.btnCancel)),
         ],
@@ -47,11 +53,11 @@ class TodoDialog{
               readOnly: true,
               onTap: () {
                 showDatePicker(
-                    initialDatePickerMode: DatePickerMode.year,
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2030))
+                        initialDatePickerMode: DatePickerMode.year,
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2030))
                     .then((value) {
                   d = value;
                   if (value != null)
@@ -69,26 +75,57 @@ class TodoDialog{
     );
   }
 
+  static showDeleteTodo(
+      {required Todo todo,
+      required BuildContext ctx,
+      }) {
+    showDialog(
+      context: ctx,
+      builder: (context) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  BlocProvider.of<EditTodoCubit>(ctx, listen: false)
+                      .deleteTodo(todo: todo);
+                  Navigator.of(context).pop();
+                },
+                child: Text(AppStrings.btnOk)),
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(AppStrings.btnCancel)),
+          ],
+          title: Text(AppStrings.titleEditTodo),
+          content: Text(AppStrings.msgWantToDeleteTodo)),
+    );
+  }
+
   static showAddTodo({required BuildContext context}) {
     TextEditingController _titleController = TextEditingController();
     TextEditingController _dateController = TextEditingController();
     DateTime? d;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         actions: [
           TextButton(
               onPressed: () {
-                if (_titleController.text.isNotEmpty)
-                  Provider.of<TodoProvider>(context,listen: false)
-                      .addTodo(title: _titleController.text, dateTime: d);
-                Navigator.of(context).pop();
+                if (_titleController.text.isNotEmpty) {
+                  BlocProvider.of<AddTodoCubit>(context)
+                      .addTodo(_titleController.text, d ?? DateTime.now());
+                }
+                Navigator.of(ctx).pop();
               },
               child: Text(AppStrings.btnAdd)),
-          TextButton(onPressed: () {
-            Navigator.of(context).pop();
-          }, child: Text(AppStrings.btnCancel)),
+          TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text(AppStrings.btnCancel)),
         ],
         title: Text(AppStrings.titleAddTodo),
         content: Column(
@@ -105,11 +142,11 @@ class TodoDialog{
               readOnly: true,
               onTap: () {
                 showDatePicker(
-                    initialDatePickerMode: DatePickerMode.year,
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2030))
+                        initialDatePickerMode: DatePickerMode.year,
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2030))
                     .then((value) {
                   d = value;
                   if (value != null)

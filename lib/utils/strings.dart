@@ -30,4 +30,8 @@ class AppStrings {
   static const String msgNoCompletedData='You haven\'t completed any todo';
 
   static const String msgNoUncompletedData='You have completed all todos';
+
+  static const String btnOk='Ok';
+
+  static const String msgWantToDeleteTodo='Do you want to delete this todo?';
 }
